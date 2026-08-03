@@ -8,28 +8,30 @@ const nunito = Nunito({
   weight: ["700", "800", "900"],
 });
 
-const siteUrl = "https://chnurok.github.io/pokormi-kotika/";
+const siteUrl = process.env.GITHUB_ACTIONS === "true"
+  ? "https://chnurok.github.io/pokormi-kotika/"
+  : "https://pokormi-kotika-malysh.smusevmikhail.chatgpt.site/";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Покорми котика",
-  description: "Очень простая игра для самых маленьких — без рекламы и проигрыша.",
+  title: "Мои зверята",
+  description: "Добрый симулятор питомцев для самых маленьких — покорми котика и лошадку или уложи их спать.",
   openGraph: {
-    title: "Покорми котика",
-    description: "Нажми на угощение — и котик сам его съест.",
+    title: "Мои зверята",
+    description: "Покорми Рыжика и Звёздочку или уложи их спать.",
     url: siteUrl,
     images: [{
-      url: `${siteUrl}og.png`,
+      url: `${siteUrl}og-v2.png`,
       width: 1536,
       height: 1024,
-      alt: "Рыжий котик и три угощения",
+      alt: "Рыжий котик и маленькая лошадка на солнечном лугу",
     }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Покорми котика",
-    description: "Очень простая игра без рекламы и проигрыша.",
-    images: [`${siteUrl}og.png`],
+    title: "Мои зверята",
+    description: "Добрый симулятор питомцев без рекламы и проигрыша.",
+    images: [`${siteUrl}og-v2.png`],
   },
 };
 
