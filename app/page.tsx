@@ -210,7 +210,11 @@ export default function Home() {
       return;
     }
     event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Some older tablet browsers do not expose pointer capture reliably.
+    }
     const point = placeBrush(event);
     brushStrokeRef.current = { ...point, distance: 0 };
     setBrushActive(true);
