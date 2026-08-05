@@ -1,4 +1,4 @@
-const CACHE = "moi-zveryata-v6";
+const CACHE = "moi-zveryata-v7";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -17,6 +17,22 @@ self.addEventListener("install", (event) => {
       `${self.registration.scope}zvezdochka-eat-2.jpg`,
       `${self.registration.scope}zvezdochka-eat-3.jpg`,
       `${self.registration.scope}zvezdochka-eat-4.jpg`,
+      `${self.registration.scope}ryzhik-care-1.jpg`,
+      `${self.registration.scope}ryzhik-care-2.jpg`,
+      `${self.registration.scope}ryzhik-care-3.jpg`,
+      `${self.registration.scope}ryzhik-care-4.jpg`,
+      `${self.registration.scope}zvezdochka-care-1.jpg`,
+      `${self.registration.scope}zvezdochka-care-2.jpg`,
+      `${self.registration.scope}zvezdochka-care-3.jpg`,
+      `${self.registration.scope}zvezdochka-care-4.jpg`,
+      `${self.registration.scope}ryzhik-sleep-1.jpg`,
+      `${self.registration.scope}ryzhik-sleep-2.jpg`,
+      `${self.registration.scope}ryzhik-sleep-3.jpg`,
+      `${self.registration.scope}ryzhik-sleep-4.jpg`,
+      `${self.registration.scope}zvezdochka-sleep-1.jpg`,
+      `${self.registration.scope}zvezdochka-sleep-2.jpg`,
+      `${self.registration.scope}zvezdochka-sleep-3.jpg`,
+      `${self.registration.scope}zvezdochka-sleep-4.jpg`,
     ])),
   );
   self.skipWaiting();

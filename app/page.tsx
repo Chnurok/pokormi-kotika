@@ -9,6 +9,8 @@ const pets = {
     name: "Рыжик",
     image: "./ryzhik-scene-v2.jpg",
     eatFrames: ["./ryzhik-eat-1.jpg", "./ryzhik-eat-2.jpg", "./ryzhik-eat-3.jpg", "./ryzhik-eat-4.jpg"],
+    careFrames: ["./ryzhik-care-1.jpg", "./ryzhik-care-2.jpg", "./ryzhik-care-3.jpg", "./ryzhik-care-4.jpg"],
+    sleepFrames: ["./ryzhik-sleep-1.jpg", "./ryzhik-sleep-2.jpg", "./ryzhik-sleep-3.jpg", "./ryzhik-sleep-4.jpg"],
     treats: [
       { emoji: "🐟", name: "рыбку", color: "#bdeaf3" },
       { emoji: "🍗", name: "курочку", color: "#ffd8ad" },
@@ -19,6 +21,8 @@ const pets = {
     name: "Звёздочка",
     image: "./zvezdochka-scene-v2.jpg",
     eatFrames: ["./zvezdochka-eat-1.jpg", "./zvezdochka-eat-2.jpg", "./zvezdochka-eat-3.jpg", "./zvezdochka-eat-4.jpg"],
+    careFrames: ["./zvezdochka-care-1.jpg", "./zvezdochka-care-2.jpg", "./zvezdochka-care-3.jpg", "./zvezdochka-care-4.jpg"],
+    sleepFrames: ["./zvezdochka-sleep-1.jpg", "./zvezdochka-sleep-2.jpg", "./zvezdochka-sleep-3.jpg", "./zvezdochka-sleep-4.jpg"],
     treats: [
       { emoji: "🥕", name: "морковку", color: "#ffd2aa" },
       { emoji: "🍎", name: "яблоко", color: "#ffc6bd" },
@@ -66,6 +70,8 @@ export default function Home() {
   const flightTimerRef = useRef<number | null>(null);
   const reactionTimerRef = useRef<number | null>(null);
   const frameTimersRef = useRef<number[]>([]);
+  const actionTimersRef = useRef<number[]>([]);
+  const breathingTimerRef = useRef<number | null>(null);
   const groomingTimerRef = useRef<number | null>(null);
   const brushStrokeRef = useRef<{ x: number; y: number; distance: number } | null>(null);
   const [pet, setPet] = useState<Pet>("cat");
@@ -74,6 +80,8 @@ export default function Home() {
   const [fed, setFed] = useState<Record<Pet, number>>({ cat: 0, horse: 0 });
   const [chewing, setChewing] = useState(false);
   const [feedingFrame, setFeedingFrame] = useState<number | null>(null);
+  const [careFrame, setCareFrame] = useState<number | null>(null);
+  const [sleepFrame, setSleepFrame] = useState<number | null>(null);
   const [lastTreat, setLastTreat] = useState("🐟");
   const [celebrating, setCelebrating] = useState(false);
   const [petting, setPetting] = useState(false);
@@ -86,7 +94,13 @@ export default function Home() {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const currentPet = pets[pet];
-  const currentArt = feedingFrame === null ? currentPet.image : currentPet.eatFrames[feedingFrame];
+  const currentArt = feedingFrame !== null
+    ? currentPet.eatFrames[feedingFrame]
+    : sleepFrame !== null
+      ? currentPet.sleepFrames[sleepFrame]
+      : careFrame !== null
+        ? currentPet.careFrames[careFrame]
+        : currentPet.image;
 
   function clearFrameTimers() {
     frameTimersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -97,8 +111,25 @@ export default function Home() {
     frameTimersRef.current.push(window.setTimeout(() => setFeedingFrame(frame), delay));
   }
 
+  function clearActionTimers() {
+    actionTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    actionTimersRef.current = [];
+    if (breathingTimerRef.current !== null) {
+      window.clearInterval(breathingTimerRef.current);
+      breathingTimerRef.current = null;
+    }
+  }
+
+  function scheduleAction(action: () => void, delay: number) {
+    actionTimersRef.current.push(window.setTimeout(action, delay));
+  }
+
   useEffect(() => {
-    Object.values(pets).flatMap((animal) => animal.eatFrames).forEach((src) => {
+    Object.values(pets).flatMap((animal) => [
+      ...animal.eatFrames,
+      ...animal.careFrames,
+      ...animal.sleepFrames,
+    ]).forEach((src) => {
       const image = new Image();
       image.src = src;
     });
@@ -114,6 +145,8 @@ export default function Home() {
       if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
       if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
       frameTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      actionTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      if (breathingTimerRef.current !== null) window.clearInterval(breathingTimerRef.current);
     };
   }, []);
 
@@ -123,6 +156,7 @@ export default function Home() {
     if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
     if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
     clearFrameTimers();
+    clearActionTimers();
     flightTimerRef.current = null;
     reactionTimerRef.current = null;
     groomingTimerRef.current = null;
@@ -130,6 +164,9 @@ export default function Home() {
     setSleeping(false);
     setChewing(false);
     setFeedingFrame(null);
+    setCareFrame(null);
+    setSleepFrame(null);
+    setPetting(false);
     setFlying(null);
     setGrooming(false);
     setBrushActive(false);
@@ -144,13 +181,17 @@ export default function Home() {
     if (!mouth) return;
 
     setSleeping(false);
+    setSleepFrame(null);
     setGrooming(false);
+    setCareFrame(null);
     setBrushActive(false);
     setBrushProgress(0);
     setChewing(false);
+    setPetting(false);
     setHasInteracted(true);
     setLastTreat(emoji);
     clearFrameTimers();
+    clearActionTimers();
     setFeedingFrame(0);
     showFeedingFrame(1, 210);
     showFeedingFrame(2, 660);
@@ -198,35 +239,68 @@ export default function Home() {
     const next = !sleeping;
     setSleeping(next);
     setGrooming(false);
+    setGroomingDone(false);
     setBrushActive(false);
     setBrushProgress(0);
     setChewing(false);
-    if (next) playSound("sleep", soundEnabled);
+    setPetting(false);
+    setCareFrame(null);
+    clearActionTimers();
+    if (next) {
+      setSleepFrame(0);
+      scheduleAction(() => setSleepFrame(1), 320);
+      scheduleAction(() => setSleepFrame(2), 720);
+      scheduleAction(() => {
+        setSleepFrame(3);
+        breathingTimerRef.current = window.setInterval(() => {
+          setSleepFrame((frame) => frame === 2 ? 3 : 2);
+        }, 920);
+      }, 1120);
+      playSound("sleep", soundEnabled);
+    } else {
+      setSleepFrame(1);
+      scheduleAction(() => setSleepFrame(null), 360);
+    }
   }
 
   function petAnimal() {
     if (flying || chewing || grooming) return;
     setHasInteracted(true);
     if (sleeping) {
+      clearActionTimers();
       setSleeping(false);
+      setSleepFrame(1);
+      scheduleAction(() => setSleepFrame(null), 360);
       playSound("happy", soundEnabled);
       return;
     }
     if (petting) return;
+    clearActionTimers();
     setPetting(true);
+    setCareFrame(0);
+    scheduleAction(() => setCareFrame(1), 320);
+    scheduleAction(() => setCareFrame(0), 610);
     playSound("happy", soundEnabled);
-    window.setTimeout(() => setPetting(false), 800);
+    scheduleAction(() => {
+      setPetting(false);
+      setCareFrame(null);
+    }, 900);
   }
 
   function toggleGrooming() {
     if (flying || chewing) return;
     setHasInteracted(true);
+    const next = !grooming;
+    clearActionTimers();
     setSleeping(false);
+    setSleepFrame(null);
+    setPetting(false);
     setGroomingDone(false);
     setBrushActive(false);
     setBrushProgress(0);
     setBrushPosition({ x: pet === "cat" ? 50 : 58, y: pet === "cat" ? 61 : 58 });
-    setGrooming((value) => !value);
+    setCareFrame(next ? 2 : null);
+    setGrooming(next);
   }
 
   function placeBrush(event: React.PointerEvent<HTMLDivElement>) {
@@ -234,6 +308,7 @@ export default function Home() {
     const x = Math.max(12, Math.min(88, ((event.clientX - bounds.left) / bounds.width) * 100));
     const y = Math.max(22, Math.min(84, ((event.clientY - bounds.top) / bounds.height) * 100));
     setBrushPosition({ x, y });
+    setCareFrame(x < 50 ? 2 : 3);
     return { x: event.clientX, y: event.clientY };
   }
 
@@ -267,13 +342,16 @@ export default function Home() {
     if (!grooming) return;
     setBrushProgress((value) => {
       const next = Math.min(4, value + 1);
+      setCareFrame(next % 2 === 0 ? 3 : 2);
       if (next === 4) {
         setGrooming(false);
         setGroomingDone(true);
+        setCareFrame(1);
         playSound("happy", soundEnabled);
         groomingTimerRef.current = window.setTimeout(() => {
           setGroomingDone(false);
           setBrushProgress(0);
+          setCareFrame(null);
           groomingTimerRef.current = null;
         }, 1700);
       }
@@ -375,8 +453,8 @@ export default function Home() {
                 <span /><i />
               </div>
             )}
-            {sleeping && <div className="blanket" aria-hidden="true"><i /><i /><i /><span /></div>}
-            {sleeping && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
+            {sleeping && sleepFrame !== null && sleepFrame >= 2 && <div className="blanket" aria-hidden="true"><i /><i /><i /><span /></div>}
+            {sleeping && sleepFrame !== null && sleepFrame >= 2 && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
             {petting && <div className="petting-hearts" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}
             {groomingDone && <div className="groomed-stars" aria-hidden="true"><i>✦</i><i>♥</i><i>✦</i></div>}
           </div>
