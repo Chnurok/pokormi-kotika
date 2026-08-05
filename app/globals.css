@@ -151,9 +151,9 @@ button { font: inherit; color: inherit; }
 
 @media (max-height: 620px) and (orientation: landscape) {
   .topbar { top: 2%; width: 96%; }.brand { font-size: 17px; }.pet-picker button { min-width: 86px; min-height: 48px; }.pet-picker button span { font-size: 30px; }.pet-picker button small { font-size: 11px; }
-  .playground { inset: 8% 34% 3% 0; justify-content: flex-end; }.message { top: 1%; left: 34%; font-size: 16px; }
+  .playground { inset: 8% 34% 3% 0; justify-content: flex-end; }.message { top: 1%; left: 50%; font-size: 16px; }
   .pet-stage { width: min(74vh,470px); height: min(74vh,470px); }.hearts { position: absolute; bottom: 0; }
-  .care-dock { left: auto; right: 2%; bottom: 50%; flex-direction: column; width: 31%; height: 82%; padding: 10px; transform: translateY(50%); }.food-group { gap: 1.6vh; }.food-button { width: min(18vh,100px); height: min(18vh,100px); }.food-button > span { font-size: min(11vh,62px); }.dock-divider { width: 70%; height: 4px; }.sleep-button { width: min(19vh,108px); height: min(19vh,108px); }.sleep-button > span { font-size: min(9vh,52px); }
+  .care-dock { left: auto; right: 2%; bottom: 50%; flex-direction: column; width: 31%; height: 82%; padding: 10px; transform: translateY(50%); }.food-group { gap: 1vh; }.food-button { width: min(18vh,100px); height: min(18vh,100px); }.food-button > span { font-size: min(11vh,62px); }.dock-divider { width: 70%; height: 4px; }.sleep-button { width: min(19vh,108px); height: min(19vh,108px); }.sleep-button > span { font-size: min(9vh,52px); }
   .barn { right: 31%; }.sun-or-moon { right: 36%; }
 }
 
