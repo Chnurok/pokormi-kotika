@@ -8,6 +8,7 @@ const pets = {
   cat: {
     name: "Рыжик",
     image: "./ryzhik-scene-v2.jpg",
+    eatFrames: ["./ryzhik-eat-1.jpg", "./ryzhik-eat-2.jpg", "./ryzhik-eat-3.jpg", "./ryzhik-eat-4.jpg"],
     treats: [
       { emoji: "🐟", name: "рыбку", color: "#bdeaf3" },
       { emoji: "🍗", name: "курочку", color: "#ffd8ad" },
@@ -17,6 +18,7 @@ const pets = {
   horse: {
     name: "Звёздочка",
     image: "./zvezdochka-scene-v2.jpg",
+    eatFrames: ["./zvezdochka-eat-1.jpg", "./zvezdochka-eat-2.jpg", "./zvezdochka-eat-3.jpg", "./zvezdochka-eat-4.jpg"],
     treats: [
       { emoji: "🥕", name: "морковку", color: "#ffd2aa" },
       { emoji: "🍎", name: "яблоко", color: "#ffc6bd" },
@@ -63,6 +65,7 @@ export default function Home() {
   const mouthRef = useRef<HTMLDivElement>(null);
   const flightTimerRef = useRef<number | null>(null);
   const reactionTimerRef = useRef<number | null>(null);
+  const frameTimersRef = useRef<number[]>([]);
   const groomingTimerRef = useRef<number | null>(null);
   const brushStrokeRef = useRef<{ x: number; y: number; distance: number } | null>(null);
   const [pet, setPet] = useState<Pet>("cat");
@@ -70,6 +73,7 @@ export default function Home() {
   const [flying, setFlying] = useState<FlyingTreat | null>(null);
   const [fed, setFed] = useState<Record<Pet, number>>({ cat: 0, horse: 0 });
   const [chewing, setChewing] = useState(false);
+  const [feedingFrame, setFeedingFrame] = useState<number | null>(null);
   const [lastTreat, setLastTreat] = useState("🐟");
   const [celebrating, setCelebrating] = useState(false);
   const [petting, setPetting] = useState(false);
@@ -82,8 +86,22 @@ export default function Home() {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const currentPet = pets[pet];
+  const currentArt = feedingFrame === null ? currentPet.image : currentPet.eatFrames[feedingFrame];
+
+  function clearFrameTimers() {
+    frameTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    frameTimersRef.current = [];
+  }
+
+  function showFeedingFrame(frame: number, delay: number) {
+    frameTimersRef.current.push(window.setTimeout(() => setFeedingFrame(frame), delay));
+  }
 
   useEffect(() => {
+    Object.values(pets).flatMap((animal) => animal.eatFrames).forEach((src) => {
+      const image = new Image();
+      image.src = src;
+    });
     if ("serviceWorker" in navigator) {
       const base = window.location.pathname.startsWith("/pokormi-kotika") ? "/pokormi-kotika/" : "/";
       navigator.serviceWorker.register(`${base}sw.js`, { scope: base, updateViaCache: "none" }).catch(() => undefined);
@@ -95,6 +113,7 @@ export default function Home() {
       if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
       if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
       if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
+      frameTimersRef.current.forEach((timer) => window.clearTimeout(timer));
     };
   }, []);
 
@@ -103,12 +122,14 @@ export default function Home() {
     if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
     if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
     if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
+    clearFrameTimers();
     flightTimerRef.current = null;
     reactionTimerRef.current = null;
     groomingTimerRef.current = null;
     setPet(nextPet);
     setSleeping(false);
     setChewing(false);
+    setFeedingFrame(null);
     setFlying(null);
     setGrooming(false);
     setBrushActive(false);
@@ -129,6 +150,10 @@ export default function Home() {
     setChewing(false);
     setHasInteracted(true);
     setLastTreat(emoji);
+    clearFrameTimers();
+    setFeedingFrame(0);
+    showFeedingFrame(1, 210);
+    showFeedingFrame(2, 660);
     setFlying({
       pet,
       emoji,
@@ -144,6 +169,12 @@ export default function Home() {
     flightTimerRef.current = null;
     setFlying(null);
     setChewing(true);
+    setFeedingFrame(2);
+    showFeedingFrame(3, 130);
+    showFeedingFrame(2, 310);
+    showFeedingFrame(3, 490);
+    showFeedingFrame(2, 670);
+    showFeedingFrame(3, 850);
     playSound("bite", soundEnabled);
     setFed((value) => {
       const next = value[fedPet] + 1;
@@ -155,6 +186,8 @@ export default function Home() {
     });
     reactionTimerRef.current = window.setTimeout(() => {
       setChewing(false);
+      setFeedingFrame(null);
+      clearFrameTimers();
       reactionTimerRef.current = null;
     }, 1120);
   }
@@ -324,7 +357,7 @@ export default function Home() {
             aria-label={grooming ? `Расчесать питомца ${currentPet.name}` : `Погладить питомца ${currentPet.name}`}
           >
             <div className="pet-art-frame">
-              <img className="pet-art" src={currentPet.image} alt="" draggable={false} />
+              <img className="pet-art" src={currentArt} alt="" draggable={false} />
               <div className="groom-shine" aria-hidden="true">
                 {[0, 1, 2, 3].map((item) => <i key={item} className={item < brushProgress ? "is-earned" : ""}>✦</i>)}
               </div>

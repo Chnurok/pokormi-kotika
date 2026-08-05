@@ -56,6 +56,9 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /soundEnabled/);
   assert.match(page, /flightTimerRef/);
   assert.match(page, /reactionTimerRef/);
+  assert.match(page, /feedingFrame/);
+  assert.match(page, /showFeedingFrame\(1, 210\)/);
+  assert.match(page, /showFeedingFrame\(3, 850\)/);
   assert.match(page, /is-reaching/);
   assert.match(page, /bite-effect/);
   assert.match(page, /toggleGrooming/);
@@ -79,6 +82,10 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /zvezdochka-scene-v2\.jpg/);
   assert.match(serviceWorker, /ryzhik-scene-v2\.jpg/);
   assert.match(serviceWorker, /zvezdochka-scene-v2\.jpg/);
+  assert.match(page, /ryzhik-eat-1\.jpg/);
+  assert.match(page, /zvezdochka-eat-4\.jpg/);
+  assert.match(serviceWorker, /ryzhik-eat-4\.jpg/);
+  assert.match(serviceWorker, /zvezdochka-eat-4\.jpg/);
 
   const productSource = `${page}\n${layout}`;
   assert.doesNotMatch(productSource, /google-analytics|doubleclick|advertising|payment|purchase|stripe\.com/i);
@@ -90,5 +97,8 @@ test("ships an installable, offline-safe, ad-free product", async () => {
     access(new URL("public/og.png", root)),
     access(new URL("public/ryzhik-scene-v2.jpg", root)),
     access(new URL("public/zvezdochka-scene-v2.jpg", root)),
+    ...["ryzhik", "zvezdochka"].flatMap((animal) => [1, 2, 3, 4].map((frame) =>
+      access(new URL(`public/${animal}-eat-${frame}.jpg`, root)),
+    )),
   ]);
 });
