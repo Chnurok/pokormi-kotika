@@ -315,7 +315,7 @@ export default function Home() {
             onPointerUp={finishBrush}
             onPointerCancel={finishBrush}
             onKeyDown={(event) => {
-              if (event.key !== "Enter" && event.key !== " ") return;
+              if (event.key !== "Enter" && event.key !== " " && event.key !== "Space") return;
               event.preventDefault();
               if (grooming) completeBrushStroke(); else petAnimal();
             }}
