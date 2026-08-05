@@ -1,4 +1,4 @@
-const CACHE = "moi-zveryata-v3";
+const CACHE = "moi-zveryata-v4";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -23,6 +23,19 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(self.registration.scope, copy));
+        }
+        return response;
+      }).catch(() => caches.match(self.registration.scope)),
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {

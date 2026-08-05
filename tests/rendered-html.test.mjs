@@ -54,6 +54,8 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /soundEnabled/);
   assert.match(serviceWorker, /caches\.open/);
   assert.match(serviceWorker, /self\.registration\.scope/);
+  assert.match(serviceWorker, /event\.request\.mode === "navigate"/);
+  assert.match(page, /updateViaCache: "none"/);
   assert.match(layout, /og-v3\.png/);
   assert.match(layout, /manifest\.webmanifest/);
   assert.ok(icon192.size > 50_000);

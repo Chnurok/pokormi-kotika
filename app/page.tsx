@@ -75,7 +75,7 @@ export default function Home() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       const base = window.location.pathname.startsWith("/pokormi-kotika") ? "/pokormi-kotika/" : "/";
-      navigator.serviceWorker.register(`${base}sw.js`, { scope: base }).catch(() => undefined);
+      navigator.serviceWorker.register(`${base}sw.js`, { scope: base, updateViaCache: "none" }).catch(() => undefined);
     }
     const preventMenu = (event: Event) => event.preventDefault();
     document.addEventListener("contextmenu", preventMenu);
