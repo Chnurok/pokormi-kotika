@@ -26,6 +26,7 @@ const pets = {
 } as const;
 
 type FlyingTreat = {
+  pet: Pet;
   emoji: string;
   fromX: number;
   fromY: number;
@@ -60,6 +61,7 @@ function playSound(kind: "happy" | "sleep", enabled = true) {
 
 export default function Home() {
   const mouthRef = useRef<HTMLDivElement>(null);
+  const flightTimerRef = useRef<number | null>(null);
   const [pet, setPet] = useState<Pet>("cat");
   const [sleeping, setSleeping] = useState(false);
   const [flying, setFlying] = useState<FlyingTreat | null>(null);
@@ -79,11 +81,16 @@ export default function Home() {
     }
     const preventMenu = (event: Event) => event.preventDefault();
     document.addEventListener("contextmenu", preventMenu);
-    return () => document.removeEventListener("contextmenu", preventMenu);
+    return () => {
+      document.removeEventListener("contextmenu", preventMenu);
+      if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
+    };
   }, []);
 
   function choosePet(nextPet: Pet) {
     setHasInteracted(true);
+    if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
+    flightTimerRef.current = null;
     setPet(nextPet);
     setSleeping(false);
     setChewing(false);
@@ -101,28 +108,33 @@ export default function Home() {
     setHasInteracted(true);
     playSound("happy", soundEnabled);
     setFlying({
+      pet,
       emoji,
       fromX: source.left + source.width / 2,
       fromY: source.top + source.height / 2,
       toX: mouth.left + mouth.width / 2,
       toY: mouth.top + mouth.height / 2,
     });
+    flightTimerRef.current = window.setTimeout(() => finishBite(pet), 760);
   }
 
-  function finishBite() {
+  function finishBite(fedPet: Pet) {
+    flightTimerRef.current = null;
     setFlying(null);
     setChewing(true);
-    const next = fed[pet] + 1;
-    setFed((value) => ({ ...value, [pet]: next >= 5 ? 0 : next }));
-
-    if (next >= 5) {
-      setCelebrating(true);
-      window.setTimeout(() => setCelebrating(false), 1600);
-    }
+    setFed((value) => {
+      const next = value[fedPet] + 1;
+      if (next >= 5) {
+        setCelebrating(true);
+        window.setTimeout(() => setCelebrating(false), 1600);
+      }
+      return { ...value, [fedPet]: next >= 5 ? 0 : next };
+    });
     window.setTimeout(() => setChewing(false), 620);
   }
 
   function toggleSleep() {
+    if (flying) return;
     setHasInteracted(true);
     const next = !sleeping;
     setSleeping(next);
@@ -131,6 +143,7 @@ export default function Home() {
   }
 
   function petAnimal() {
+    if (flying) return;
     setHasInteracted(true);
     if (sleeping) {
       setSleeping(false);
@@ -254,7 +267,7 @@ export default function Home() {
       </section>
 
       {flying && (
-        <div className="flying-treat" aria-hidden="true" onAnimationEnd={finishBite} style={{
+        <div className="flying-treat" aria-hidden="true" style={{
           "--from-x": `${flying.fromX}px`, "--from-y": `${flying.fromY}px`,
           "--to-x": `${flying.toX}px`, "--to-y": `${flying.toY}px`,
         } as React.CSSProperties}>{flying.emoji}</div>
