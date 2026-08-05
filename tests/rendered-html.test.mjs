@@ -60,6 +60,7 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /bite-effect/);
   assert.match(page, /toggleGrooming/);
   assert.match(page, /beginBrush/);
+  assert.match(page, /completeBrushStroke/);
   assert.match(page, /brushProgress/);
   assert.match(page, /Расчесать питомца/);
   assert.doesNotMatch(page, /onAnimationEnd=/);

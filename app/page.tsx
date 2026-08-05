@@ -230,13 +230,10 @@ export default function Home() {
     previous.y = point.y;
   }
 
-  function finishBrush() {
-    if (!grooming || !brushActive) return;
-    const distance = brushStrokeRef.current?.distance ?? 0;
-    brushStrokeRef.current = null;
-    setBrushActive(false);
+  function completeBrushStroke() {
+    if (!grooming) return;
     setBrushProgress((value) => {
-      const next = Math.min(4, value + (distance >= 8 ? 1 : 0));
+      const next = Math.min(4, value + 1);
       if (next === 4) {
         setGrooming(false);
         setGroomingDone(true);
@@ -249,6 +246,14 @@ export default function Home() {
       }
       return next;
     });
+  }
+
+  function finishBrush() {
+    if (!grooming || !brushActive) return;
+    const distance = brushStrokeRef.current?.distance ?? 0;
+    brushStrokeRef.current = null;
+    setBrushActive(false);
+    if (distance >= 8) completeBrushStroke();
   }
 
   const message = sleeping
@@ -309,7 +314,11 @@ export default function Home() {
             onPointerMove={moveBrush}
             onPointerUp={finishBrush}
             onPointerCancel={finishBrush}
-            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") petAnimal(); }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              if (grooming) completeBrushStroke(); else petAnimal();
+            }}
             role="button"
             tabIndex={0}
             aria-label={grooming ? `Расчесать питомца ${currentPet.name}` : `Погладить питомца ${currentPet.name}`}
