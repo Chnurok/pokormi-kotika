@@ -63,6 +63,8 @@ export default function Home() {
   const mouthRef = useRef<HTMLDivElement>(null);
   const flightTimerRef = useRef<number | null>(null);
   const reactionTimerRef = useRef<number | null>(null);
+  const groomingTimerRef = useRef<number | null>(null);
+  const brushStrokeRef = useRef<{ x: number; y: number; distance: number } | null>(null);
   const [pet, setPet] = useState<Pet>("cat");
   const [sleeping, setSleeping] = useState(false);
   const [flying, setFlying] = useState<FlyingTreat | null>(null);
@@ -71,6 +73,11 @@ export default function Home() {
   const [lastTreat, setLastTreat] = useState("🐟");
   const [celebrating, setCelebrating] = useState(false);
   const [petting, setPetting] = useState(false);
+  const [grooming, setGrooming] = useState(false);
+  const [brushActive, setBrushActive] = useState(false);
+  const [brushProgress, setBrushProgress] = useState(0);
+  const [groomingDone, setGroomingDone] = useState(false);
+  const [brushPosition, setBrushPosition] = useState({ x: 50, y: 58 });
   const [hasInteracted, setHasInteracted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -87,6 +94,7 @@ export default function Home() {
       document.removeEventListener("contextmenu", preventMenu);
       if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
       if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
+      if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
     };
   }, []);
 
@@ -94,12 +102,18 @@ export default function Home() {
     setHasInteracted(true);
     if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
     if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
+    if (groomingTimerRef.current !== null) window.clearTimeout(groomingTimerRef.current);
     flightTimerRef.current = null;
     reactionTimerRef.current = null;
+    groomingTimerRef.current = null;
     setPet(nextPet);
     setSleeping(false);
     setChewing(false);
     setFlying(null);
+    setGrooming(false);
+    setBrushActive(false);
+    setBrushProgress(0);
+    setGroomingDone(false);
   }
 
   function feed(emoji: string, button: HTMLButtonElement) {
@@ -109,6 +123,9 @@ export default function Home() {
     if (!mouth) return;
 
     setSleeping(false);
+    setGrooming(false);
+    setBrushActive(false);
+    setBrushProgress(0);
     setChewing(false);
     setHasInteracted(true);
     setLastTreat(emoji);
@@ -147,12 +164,15 @@ export default function Home() {
     setHasInteracted(true);
     const next = !sleeping;
     setSleeping(next);
+    setGrooming(false);
+    setBrushActive(false);
+    setBrushProgress(0);
     setChewing(false);
     if (next) playSound("sleep", soundEnabled);
   }
 
   function petAnimal() {
-    if (flying || chewing) return;
+    if (flying || chewing || grooming) return;
     setHasInteracted(true);
     if (sleeping) {
       setSleeping(false);
@@ -165,8 +185,74 @@ export default function Home() {
     window.setTimeout(() => setPetting(false), 800);
   }
 
+  function toggleGrooming() {
+    if (flying || chewing) return;
+    setHasInteracted(true);
+    setSleeping(false);
+    setGroomingDone(false);
+    setBrushActive(false);
+    setBrushProgress(0);
+    setBrushPosition({ x: pet === "cat" ? 50 : 58, y: pet === "cat" ? 61 : 58 });
+    setGrooming((value) => !value);
+  }
+
+  function placeBrush(event: React.PointerEvent<HTMLDivElement>) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(12, Math.min(88, ((event.clientX - bounds.left) / bounds.width) * 100));
+    const y = Math.max(22, Math.min(84, ((event.clientY - bounds.top) / bounds.height) * 100));
+    setBrushPosition({ x, y });
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  function beginBrush(event: React.PointerEvent<HTMLDivElement>) {
+    if (!grooming) {
+      petAnimal();
+      return;
+    }
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const point = placeBrush(event);
+    brushStrokeRef.current = { ...point, distance: 0 };
+    setBrushActive(true);
+  }
+
+  function moveBrush(event: React.PointerEvent<HTMLDivElement>) {
+    if (!grooming || !brushActive || !brushStrokeRef.current) return;
+    event.preventDefault();
+    const previous = brushStrokeRef.current;
+    const point = placeBrush(event);
+    previous.distance += Math.hypot(point.x - previous.x, point.y - previous.y);
+    previous.x = point.x;
+    previous.y = point.y;
+  }
+
+  function finishBrush() {
+    if (!grooming || !brushActive) return;
+    const distance = brushStrokeRef.current?.distance ?? 0;
+    brushStrokeRef.current = null;
+    setBrushActive(false);
+    setBrushProgress((value) => {
+      const next = Math.min(4, value + (distance >= 8 ? 1 : 0));
+      if (next === 4) {
+        setGrooming(false);
+        setGroomingDone(true);
+        playSound("happy", soundEnabled);
+        groomingTimerRef.current = window.setTimeout(() => {
+          setGroomingDone(false);
+          setBrushProgress(0);
+          groomingTimerRef.current = null;
+        }, 1700);
+      }
+      return next;
+    });
+  }
+
   const message = sleeping
     ? `Тс-с-с… ${currentPet.name} спит`
+    : groomingDone
+      ? pet === "cat" ? "Рыжик — красавчик!" : "Звёздочка — красавица!"
+      : grooming
+        ? `Расчеши ${pet === "cat" ? "Рыжика" : "Звёздочку"}`
     : celebrating
       ? `${currentPet.name} счастлив${pet === "horse" ? "а" : ""}!`
       : chewing
@@ -210,30 +296,49 @@ export default function Home() {
       </header>
 
       <section className="playground">
-        <div className="message" aria-live="polite"><span aria-hidden="true">{sleeping ? "☾" : chewing ? "♥" : "✦"}</span>{message}</div>
+        <div className="message" aria-live="polite"><span aria-hidden="true">{sleeping ? "☾" : grooming ? "✦" : chewing || groomingDone ? "♥" : "✦"}</span>{message}</div>
 
-        <div
-          className={`pet-stage pet-${pet} ${flying ? "is-reaching" : ""} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""} ${petting ? "is-petting" : ""}`}
-          onPointerDown={petAnimal}
-          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") petAnimal(); }}
-          role="button"
-          tabIndex={0}
-          aria-label={`Погладить питомца ${currentPet.name}`}
-        >
-          <div className="pet-art-frame">
-            <img className="pet-art" src={currentPet.image} alt="" draggable={false} />
-            <div className="night-wash" aria-hidden="true" />
-          </div>
-          <div ref={mouthRef} className="mouth-target" aria-hidden="true" />
-          {chewing && (
-            <div className="bite-effect" aria-hidden="true">
-              <span className="bite-treat">{lastTreat}</span>
-              <i /><i /><i /><i /><b>✦</b>
+        <div className="stage-shell">
+          <div
+            className={`pet-stage pet-${pet} ${flying ? "is-reaching" : ""} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""} ${petting ? "is-petting" : ""} ${grooming ? "is-grooming" : ""} ${brushActive ? "is-brush-active" : ""} ${groomingDone ? "is-groomed" : ""}`}
+            onPointerDown={beginBrush}
+            onPointerMove={moveBrush}
+            onPointerUp={finishBrush}
+            onPointerCancel={finishBrush}
+            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") petAnimal(); }}
+            role="button"
+            tabIndex={0}
+            aria-label={grooming ? `Расчесать питомца ${currentPet.name}` : `Погладить питомца ${currentPet.name}`}
+          >
+            <div className="pet-art-frame">
+              <img className="pet-art" src={currentPet.image} alt="" draggable={false} />
+              <div className="groom-shine" aria-hidden="true">
+                {[0, 1, 2, 3].map((item) => <i key={item} className={item < brushProgress ? "is-earned" : ""}>✦</i>)}
+              </div>
+              <div className="night-wash" aria-hidden="true" />
             </div>
-          )}
-          {sleeping && <div className="blanket" aria-hidden="true"><i /><i /><i /><span /></div>}
-          {sleeping && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
-          {petting && <div className="petting-hearts" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}
+            <div ref={mouthRef} className="mouth-target" aria-hidden="true" />
+            {chewing && (
+              <div className="bite-effect" aria-hidden="true">
+                <span className="bite-treat">{lastTreat}</span>
+                <i /><i /><i /><i /><b>✦</b>
+              </div>
+            )}
+            {grooming && (
+              <div className={`moving-brush ${brushActive ? "is-moving" : ""}`} style={{ left: `${brushPosition.x}%`, top: `${brushPosition.y}%` }} aria-hidden="true">
+                <span /><i />
+              </div>
+            )}
+            {sleeping && <div className="blanket" aria-hidden="true"><i /><i /><i /><span /></div>}
+            {sleeping && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
+            {petting && <div className="petting-hearts" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}
+            {groomingDone && <div className="groomed-stars" aria-hidden="true"><i>✦</i><i>♥</i><i>✦</i></div>}
+          </div>
+          <button className={`brush-toggle ${grooming ? "is-active" : ""}`} onPointerDown={(event) => { event.stopPropagation(); toggleGrooming(); }} aria-label={grooming ? "Закончить расчёсывание" : `Расчесать питомца ${currentPet.name}`} aria-pressed={grooming}>
+            <span className="brush-illustration" aria-hidden="true"><i /></span>
+            <small>{grooming ? `${brushProgress}/4` : "Щётка"}</small>
+            <span className="brush-progress" aria-hidden="true">{[0, 1, 2, 3].map((item) => <i key={item} className={item < brushProgress ? "is-full" : ""} />)}</span>
+          </button>
         </div>
 
         <div className="hearts" aria-label={`${currentPet.name}: ${fed[pet]} из 5 сердечек`}>

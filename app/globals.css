@@ -62,7 +62,8 @@ button { font: inherit; color: inherit; }
 .message { position:relative; z-index:8; display:flex; align-items:center; gap:.48em; margin-bottom:clamp(-7px,-.7vmin,-3px); padding:.55em 1.1em .62em; border:2px solid rgba(255,255,255,.92); border-radius:999px; background:rgba(255,251,238,.94); box-shadow:0 9px 24px rgba(65,70,50,.16),inset 0 1px white; font-size:clamp(16px,2.2vmin,24px); font-weight:900; white-space:nowrap; backdrop-filter:blur(12px); }
 .message span { color:var(--coral); font-size:1.05em; }
 
-.pet-stage { position:relative; width:min(58vh,72vw,610px); aspect-ratio:1; outline:none; pointer-events:auto; cursor:pointer; transform-origin:50% 90%; }
+.stage-shell { position:relative; width:min(58vh,72vw,610px); aspect-ratio:1; pointer-events:none; }
+.pet-stage { position:absolute; inset:0; width:100%; height:100%; outline:none; pointer-events:auto; cursor:pointer; transform-origin:50% 90%; }
 .pet-stage:focus-visible .pet-art-frame { outline:7px solid #4f72ff; outline-offset:5px; }
 .pet-art-frame { position:absolute; inset:0; overflow:hidden; border:clamp(5px,.7vmin,8px) solid rgba(255,253,245,.96); border-radius:clamp(54px,9vmin,104px); background:#dcebcf; box-shadow:0 18px 0 rgba(72,74,49,.1),0 32px 60px rgba(50,67,53,.24),inset 0 0 0 1px rgba(98,64,40,.1); transition:filter .7s,transform .25s; }
 .pet-art { width:100%; height:100%; display:block; object-fit:cover; pointer-events:none; }
@@ -77,6 +78,31 @@ button { font: inherit; color: inherit; }
 .is-celebrating { animation:happyBounce .48s ease-in-out 3; }
 .is-petting .pet-art-frame { animation:petWiggle .24s ease-in-out 3; }
 .is-sleeping .pet-art-frame { filter:saturate(.64) brightness(.78); transform:translateY(1.5%); }
+.is-grooming { touch-action:none; }
+.is-grooming .pet-art-frame { box-shadow:0 18px 0 rgba(72,74,49,.1),0 32px 60px rgba(50,67,53,.24),0 0 0 clamp(5px,.8vmin,9px) rgba(255,226,121,.72); }
+.is-brush-active .pet-art { animation:coatRipple .42s ease-in-out infinite alternate; }
+.is-groomed .pet-art-frame { animation:groomCelebrate 1.3s cubic-bezier(.2,.8,.3,1); }
+
+.brush-toggle { position:absolute; z-index:26; right:-3%; bottom:3%; display:flex; flex-direction:column; align-items:center; justify-content:center; width:clamp(68px,10vmin,102px); aspect-ratio:1; padding:4px; border:clamp(4px,.55vmin,6px) solid rgba(255,255,255,.94); border-radius:50%; background:linear-gradient(145deg,#f6cf82,#df9a5c); box-shadow:0 clamp(6px,.8vmin,9px) 0 rgba(111,73,48,.25),0 13px 26px rgba(68,52,39,.18),inset 0 5px rgba(255,255,255,.22); color:#65463a; pointer-events:auto; cursor:pointer; transition:transform .15s,filter .2s; }
+.brush-toggle:active { transform:translateY(6px) scale(.95); }
+.brush-toggle.is-active { filter:saturate(1.12); box-shadow:0 6px 0 rgba(111,73,48,.22),0 0 0 clamp(5px,.7vmin,8px) #fff0a4,0 14px 28px rgba(68,52,39,.18); }
+.brush-toggle small { margin-top:1px; font-size:clamp(9px,1.3vmin,13px); font-weight:900; }
+.brush-illustration { position:relative; display:block; width:52%; height:48%; transform:rotate(-28deg); filter:drop-shadow(0 4px 2px rgba(77,49,35,.16)); }
+.brush-illustration::before { content:""; position:absolute; left:42%; top:35%; width:18%; height:66%; border-radius:999px; background:linear-gradient(90deg,#8d573c,#c78455,#7a4935); }
+.brush-illustration::after { content:""; position:absolute; left:14%; top:2%; width:72%; height:46%; border-radius:48% 48% 38% 38%; background:linear-gradient(180deg,#b76f48 0 58%,#f4e1b8 59%); border:2px solid rgba(91,56,41,.32); }
+.brush-progress { position:absolute; left:50%; bottom:-14%; display:flex; gap:3px; transform:translateX(-50%); }
+.brush-progress i { width:clamp(6px,.8vmin,9px); aspect-ratio:1; border-radius:50%; background:rgba(255,255,255,.72); box-shadow:0 1px 3px rgba(76,54,40,.2); }
+.brush-progress i.is-full { background:#f06f69; }
+
+.moving-brush { position:absolute; z-index:22; width:18%; height:13%; transform:translate(-50%,-50%) rotate(-22deg); filter:drop-shadow(0 7px 4px rgba(55,39,31,.28)); pointer-events:none; transition:left .08s linear,top .08s linear; }
+.moving-brush span { position:absolute; left:0; top:0; width:58%; height:76%; border:clamp(2px,.35vmin,4px) solid #674738; border-radius:45% 45% 34% 34%; background:linear-gradient(180deg,#d88755 0 58%,#f1dfbd 59%); }
+.moving-brush span::after { content:""; position:absolute; left:10%; right:10%; bottom:6%; height:27%; background:repeating-linear-gradient(90deg,#7b604d 0 3px,#e8d3af 3px 6px); border-radius:0 0 8px 8px; }
+.moving-brush i { position:absolute; left:49%; top:28%; width:48%; height:24%; border:clamp(2px,.35vmin,4px) solid #674738; border-left:0; border-radius:0 999px 999px 0; background:linear-gradient(#bd754b,#8e553d); }
+.moving-brush.is-moving { animation:brushWiggle .22s ease-in-out infinite alternate; }
+.groom-shine { position:absolute; inset:0; pointer-events:none; }
+.groom-shine i { position:absolute; z-index:3; color:#fff3a1; font-size:clamp(20px,3.6vmin,38px); font-style:normal; opacity:0; text-shadow:0 3px 8px rgba(104,71,36,.24); }
+.groom-shine i:nth-child(1){left:30%;top:44%}.groom-shine i:nth-child(2){right:27%;top:54%}.groom-shine i:nth-child(3){left:38%;bottom:18%}.groom-shine i:nth-child(4){right:20%;top:31%}.groom-shine i.is-earned { animation:shineEarn .7s ease-out forwards; }
+.groomed-stars { position:absolute; z-index:24; inset:8%; pointer-events:none; }.groomed-stars i { position:absolute; color:#fff1a0; font-size:clamp(34px,7vmin,68px); font-style:normal; filter:drop-shadow(0 4px 2px rgba(80,54,38,.18)); animation:groomStar 1.3s ease-out forwards; }.groomed-stars i:nth-child(1){left:4%;top:28%}.groomed-stars i:nth-child(2){left:44%;top:2%;color:#f06f69;animation-delay:.08s}.groomed-stars i:nth-child(3){right:3%;top:36%;animation-delay:.16s}
 
 .bite-effect { position:absolute; z-index:20; width:22%; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none; }
 .pet-cat .bite-effect { left:50%; top:49%; }.pet-horse .bite-effect { left:44.5%; top:51%; }
@@ -124,6 +150,11 @@ button { font: inherit; color: inherit; }
 @keyframes treatCrunch { 0%{transform:translate(-50%,-50%) scale(.75) rotate(-8deg);opacity:1} 40%{transform:translate(-50%,-50%) scale(.45) rotate(10deg);opacity:1} 100%{transform:translate(-50%,-50%) scale(.05) rotate(-20deg);opacity:0} }
 @keyframes crumbFly { 0%{transform:translate(0,0) scale(.3);opacity:1} 100%{transform:translate(var(--cx),var(--cy)) scale(1);opacity:0} }
 @keyframes sparkPop { 0%{transform:scale(.2) rotate(-20deg);opacity:0} 35%{transform:scale(1.25) rotate(8deg);opacity:1} 100%{transform:scale(.7) rotate(24deg);opacity:0} }
+@keyframes brushWiggle { from{transform:translate(-50%,-50%) rotate(-31deg) translateY(-3px)} to{transform:translate(-50%,-50%) rotate(-15deg) translateY(3px)} }
+@keyframes coatRipple { from{transform:scale(1.01) translateX(-.4%)} to{transform:scale(1.025) translateX(.4%)} }
+@keyframes shineEarn { 0%{transform:scale(.2) rotate(-24deg);opacity:0} 45%{transform:scale(1.35) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:.92} }
+@keyframes groomCelebrate { 0%{transform:scale(1)} 24%{transform:scale(1.045) translateY(-2%)} 44%{transform:scale(1.02) rotate(-1.2deg)} 64%{transform:scale(1.035) rotate(1.2deg)} 100%{transform:scale(1)} }
+@keyframes groomStar { 0%{transform:translateY(20px) scale(.2);opacity:0} 35%{opacity:1} 100%{transform:translateY(-55px) scale(1.18) rotate(18deg);opacity:0} }
 @keyframes happyBounce { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-4vmin) rotate(1.5deg)} }
 @keyframes petWiggle { 0%,100%{transform:rotate(0) scale(1)} 50%{transform:rotate(1.5deg) scale(1.02)} }
 @keyframes petHeart { 0%{transform:translateY(20px) scale(.4);opacity:0} 35%{opacity:1} 100%{transform:translateY(-55px) scale(1.15);opacity:0} }
@@ -142,14 +173,15 @@ button { font: inherit; color: inherit; }
   .top-actions { gap:6px; }.sound-toggle { width:54px; }
   .pet-picker { padding:5px; gap:4px; }.pet-picker button { min-width:58px; width:58px; min-height:58px; height:58px; justify-content:center; padding:4px; }.pet-picker button img { width:48px; }.pet-picker button small { display:none; }
   .playground { inset:11% 0 23%; }.message { font-size:15px; }
-  .pet-stage { width:min(54vh,92vw,470px); }
+  .stage-shell { width:min(54vh,92vw,470px); }
   .care-dock { gap:9px; padding:9px 11px; }.food-group { gap:8px; }
 }
 
 @media (max-width: 390px) {
   .topbar { width:96%; }.brand { transform:scale(.9); transform-origin:left center; }
   .message { padding:.42em .8em .47em; font-size:14px; }
-  .pet-stage { width:min(51vh,94vw,390px); }
+  .stage-shell { width:min(51vh,94vw,390px); }
+  .brush-toggle { right:1%; bottom:2%; width:64px; }
   .care-dock { gap:6px; height:19%; padding:7px; }
   .food-group { gap:6px; }
   .food-button { width:clamp(58px,18vw,67px); height:clamp(58px,18vw,67px); }
@@ -164,11 +196,11 @@ button { font: inherit; color: inherit; }
   .dock-caption { display:none; }
   .pet-picker button { min-width:86px; min-height:48px; height:48px; }.pet-picker button img { width:40px; }.pet-picker button small { font-size:11px; }
   .playground { inset:7% 34% 2% 0; justify-content:flex-end; }.message { margin-bottom:-5px; font-size:15px; }
-  .pet-stage { width:min(73vh,445px); }.hearts { position:absolute; bottom:0; }
+  .stage-shell { width:min(73vh,445px); }.hearts { position:absolute; bottom:0; }
   .care-dock { left:auto; right:2%; bottom:50%; flex-direction:column; width:31%; height:82%; padding:10px; transform:translateY(50%); }
   .food-group { gap:1vh; }.food-button { width:min(18vh,98px); height:min(18vh,98px); }.food-button > span { font-size:min(10.5vh,60px); }
   .dock-divider { width:70%; height:2px; }.sleep-button { width:min(19vh,106px); height:min(19vh,106px); }.sleep-button > .sleep-glyph { font-size:min(9vh,50px); }
   .sun-or-moon { right:36%; }
 }
 
-@media (prefers-reduced-motion: reduce) { .stars i,.pet-art-frame,.pet-art,.pet-stage,.bite-effect * { animation:none !important; } }
+@media (prefers-reduced-motion: reduce) { .stars i,.pet-art-frame,.pet-art,.pet-stage,.bite-effect *,.moving-brush,.groom-shine i,.groomed-stars i { animation:none !important; } }
