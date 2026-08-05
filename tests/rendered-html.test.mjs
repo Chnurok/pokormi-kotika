@@ -32,14 +32,16 @@ test("renders the complete pet-care game", async () => {
 
 test("ships an installable, offline-safe, ad-free product", async () => {
   const root = new URL("../", import.meta.url);
-  const [page, layout, manifestText, serviceWorker, icon192, icon512, cover] = await Promise.all([
+  const [page, layout, manifestText, serviceWorker, icon192, icon512, cover, catArt, horseArt] = await Promise.all([
     readFile(new URL("app/page.tsx", root), "utf8"),
     readFile(new URL("app/layout.tsx", root), "utf8"),
     readFile(new URL("public/manifest.webmanifest", root), "utf8"),
     readFile(new URL("public/sw.js", root), "utf8"),
     stat(new URL("public/icon-192.png", root)),
     stat(new URL("public/icon-512.png", root)),
-    stat(new URL("public/og-v3.png", root)),
+    stat(new URL("public/og.png", root)),
+    stat(new URL("public/ryzhik-scene-v2.jpg", root)),
+    stat(new URL("public/zvezdochka-scene-v2.jpg", root)),
   ]);
 
   const manifest = JSON.parse(manifestText);
@@ -58,11 +60,17 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(serviceWorker, /self\.registration\.scope/);
   assert.match(serviceWorker, /event\.request\.mode === "navigate"/);
   assert.match(page, /updateViaCache: "none"/);
-  assert.match(layout, /og-v3\.png/);
+  assert.match(layout, /og\.png/);
   assert.match(layout, /manifest\.webmanifest/);
   assert.ok(icon192.size > 50_000);
   assert.ok(icon512.size > 200_000);
   assert.ok(cover.size > 1_000_000);
+  assert.ok(catArt.size > 100_000);
+  assert.ok(horseArt.size > 100_000);
+  assert.match(page, /ryzhik-scene-v2\.jpg/);
+  assert.match(page, /zvezdochka-scene-v2\.jpg/);
+  assert.match(serviceWorker, /ryzhik-scene-v2\.jpg/);
+  assert.match(serviceWorker, /zvezdochka-scene-v2\.jpg/);
 
   const productSource = `${page}\n${layout}`;
   assert.doesNotMatch(productSource, /google-analytics|doubleclick|advertising|payment|purchase|stripe\.com/i);
@@ -71,6 +79,8 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   await Promise.all([
     access(new URL("public/icon-192.png", root)),
     access(new URL("public/icon-512.png", root)),
-    access(new URL("public/og-v3.png", root)),
+    access(new URL("public/og.png", root)),
+    access(new URL("public/ryzhik-scene-v2.jpg", root)),
+    access(new URL("public/zvezdochka-scene-v2.jpg", root)),
   ]);
 });

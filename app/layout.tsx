@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     description: "Покорми Рыжика и Звёздочку или уложи их спать.",
     url: siteUrl,
     images: [{
-      url: `${siteUrl}og-v3.png`,
+      url: `${siteUrl}og.png`,
       width: 1536,
       height: 1024,
       alt: "Рыжий котик и маленькая лошадка на солнечном лугу",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Мои зверята",
     description: "Добрый симулятор питомцев без рекламы и проигрыша.",
-    images: [`${siteUrl}og-v3.png`],
+    images: [`${siteUrl}og.png`],
   },
 };
 

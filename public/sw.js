@@ -1,4 +1,4 @@
-const CACHE = "moi-zveryata-v4";
+const CACHE = "moi-zveryata-v5";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -7,6 +7,8 @@ self.addEventListener("install", (event) => {
       `${self.registration.scope}manifest.webmanifest`,
       `${self.registration.scope}icon-192.png`,
       `${self.registration.scope}icon-512.png`,
+      `${self.registration.scope}ryzhik-scene-v2.jpg`,
+      `${self.registration.scope}zvezdochka-scene-v2.jpg`,
     ])),
   );
   self.skipWaiting();
