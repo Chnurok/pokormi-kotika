@@ -34,7 +34,7 @@ type FlyingTreat = {
   toY: number;
 };
 
-function playSound(kind: "happy" | "sleep", enabled = true) {
+function playSound(kind: "happy" | "sleep" | "bite", enabled = true) {
   if (!enabled) return;
   const AudioContextClass =
     window.AudioContext ||
@@ -42,19 +42,19 @@ function playSound(kind: "happy" | "sleep", enabled = true) {
   if (!AudioContextClass) return;
 
   const context = new AudioContextClass();
-  const notes = kind === "happy" ? [520, 660, 820] : [520, 440, 350];
+  const notes = kind === "happy" ? [520, 660, 820] : kind === "bite" ? [230, 175, 205] : [520, 440, 350];
   notes.forEach((frequency, index) => {
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     const start = context.currentTime + index * 0.11;
-    oscillator.type = kind === "happy" ? "sine" : "triangle";
+    oscillator.type = kind === "happy" ? "sine" : kind === "bite" ? "square" : "triangle";
     oscillator.frequency.value = frequency;
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(kind === "happy" ? 0.08 : 0.045, start + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.23);
+    gain.gain.exponentialRampToValueAtTime(kind === "happy" ? 0.08 : kind === "bite" ? 0.025 : 0.045, start + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + (kind === "bite" ? 0.1 : 0.23));
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(start);
-    oscillator.stop(start + 0.24);
+    oscillator.stop(start + (kind === "bite" ? 0.11 : 0.24));
   });
   window.setTimeout(() => context.close(), 700);
 }
@@ -62,11 +62,13 @@ function playSound(kind: "happy" | "sleep", enabled = true) {
 export default function Home() {
   const mouthRef = useRef<HTMLDivElement>(null);
   const flightTimerRef = useRef<number | null>(null);
+  const reactionTimerRef = useRef<number | null>(null);
   const [pet, setPet] = useState<Pet>("cat");
   const [sleeping, setSleeping] = useState(false);
   const [flying, setFlying] = useState<FlyingTreat | null>(null);
   const [fed, setFed] = useState<Record<Pet, number>>({ cat: 0, horse: 0 });
   const [chewing, setChewing] = useState(false);
+  const [lastTreat, setLastTreat] = useState("🐟");
   const [celebrating, setCelebrating] = useState(false);
   const [petting, setPetting] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -84,13 +86,16 @@ export default function Home() {
     return () => {
       document.removeEventListener("contextmenu", preventMenu);
       if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
+      if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
     };
   }, []);
 
   function choosePet(nextPet: Pet) {
     setHasInteracted(true);
     if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
+    if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
     flightTimerRef.current = null;
+    reactionTimerRef.current = null;
     setPet(nextPet);
     setSleeping(false);
     setChewing(false);
@@ -98,7 +103,7 @@ export default function Home() {
   }
 
   function feed(emoji: string, button: HTMLButtonElement) {
-    if (flying) return;
+    if (flying || chewing) return;
     const source = button.getBoundingClientRect();
     const mouth = mouthRef.current?.getBoundingClientRect();
     if (!mouth) return;
@@ -106,7 +111,7 @@ export default function Home() {
     setSleeping(false);
     setChewing(false);
     setHasInteracted(true);
-    playSound("happy", soundEnabled);
+    setLastTreat(emoji);
     setFlying({
       pet,
       emoji,
@@ -122,6 +127,7 @@ export default function Home() {
     flightTimerRef.current = null;
     setFlying(null);
     setChewing(true);
+    playSound("bite", soundEnabled);
     setFed((value) => {
       const next = value[fedPet] + 1;
       if (next >= 5) {
@@ -130,11 +136,14 @@ export default function Home() {
       }
       return { ...value, [fedPet]: next >= 5 ? 0 : next };
     });
-    window.setTimeout(() => setChewing(false), 620);
+    reactionTimerRef.current = window.setTimeout(() => {
+      setChewing(false);
+      reactionTimerRef.current = null;
+    }, 1120);
   }
 
   function toggleSleep() {
-    if (flying) return;
+    if (flying || chewing) return;
     setHasInteracted(true);
     const next = !sleeping;
     setSleeping(next);
@@ -143,7 +152,7 @@ export default function Home() {
   }
 
   function petAnimal() {
-    if (flying) return;
+    if (flying || chewing) return;
     setHasInteracted(true);
     if (sleeping) {
       setSleeping(false);
@@ -161,7 +170,7 @@ export default function Home() {
     : celebrating
       ? `${currentPet.name} счастлив${pet === "horse" ? "а" : ""}!`
       : chewing
-        ? "Ням-ням!"
+        ? "Хрум-хрум!"
         : `Угости ${pet === "cat" ? "Рыжика" : "Звёздочку"}`;
 
   return (
@@ -204,7 +213,7 @@ export default function Home() {
         <div className="message" aria-live="polite"><span aria-hidden="true">{sleeping ? "☾" : chewing ? "♥" : "✦"}</span>{message}</div>
 
         <div
-          className={`pet-stage pet-${pet} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""} ${petting ? "is-petting" : ""}`}
+          className={`pet-stage pet-${pet} ${flying ? "is-reaching" : ""} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""} ${petting ? "is-petting" : ""}`}
           onPointerDown={petAnimal}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") petAnimal(); }}
           role="button"
@@ -216,6 +225,12 @@ export default function Home() {
             <div className="night-wash" aria-hidden="true" />
           </div>
           <div ref={mouthRef} className="mouth-target" aria-hidden="true" />
+          {chewing && (
+            <div className="bite-effect" aria-hidden="true">
+              <span className="bite-treat">{lastTreat}</span>
+              <i /><i /><i /><i /><b>✦</b>
+            </div>
+          )}
           {sleeping && <div className="blanket" aria-hidden="true"><i /><i /><i /><span /></div>}
           {sleeping && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
           {petting && <div className="petting-hearts" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}

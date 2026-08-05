@@ -70,10 +70,22 @@ button { font: inherit; color: inherit; }
 .is-night .night-wash { opacity:1; }
 .mouth-target { position:absolute; z-index:9; width:11%; height:8%; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; }
 .pet-cat .mouth-target { left:50%; top:49%; }.pet-horse .mouth-target { left:44.5%; top:51%; }
-.is-chewing .pet-art-frame { animation:munch .18s ease-in-out 3; }
+.is-reaching { animation:stageReach .76s cubic-bezier(.2,.75,.3,1) both; }
+.is-reaching .pet-art { animation:lookAtTreat .76s cubic-bezier(.2,.75,.3,1) both; transform-origin:50% 58%; }
+.is-chewing .pet-art-frame { animation:biteFrame 1.08s cubic-bezier(.36,.07,.19,.97) both; }
+.is-chewing .pet-art { animation:characterChew 1.08s cubic-bezier(.36,.07,.19,.97) both; transform-origin:50% 58%; }
 .is-celebrating { animation:happyBounce .48s ease-in-out 3; }
 .is-petting .pet-art-frame { animation:petWiggle .24s ease-in-out 3; }
 .is-sleeping .pet-art-frame { filter:saturate(.64) brightness(.78); transform:translateY(1.5%); }
+
+.bite-effect { position:absolute; z-index:20; width:22%; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none; }
+.pet-cat .bite-effect { left:50%; top:49%; }.pet-horse .bite-effect { left:44.5%; top:51%; }
+.bite-effect::before,.bite-effect::after { content:""; position:absolute; inset:15%; border:clamp(3px,.45vmin,5px) solid rgba(255,249,213,.95); border-radius:50%; animation:biteRing .75s ease-out forwards; }
+.bite-effect::after { animation-delay:.13s; }
+.bite-treat { position:absolute; z-index:2; left:50%; top:50%; font-size:clamp(26px,5vmin,52px); line-height:1; transform:translate(-50%,-50%); filter:drop-shadow(0 5px 3px rgba(66,42,30,.25)); animation:treatCrunch .54s cubic-bezier(.2,.8,.3,1) forwards; }
+.bite-effect i { position:absolute; left:46%; top:46%; width:clamp(7px,1.1vmin,12px); aspect-ratio:1; border-radius:50% 35% 55% 40%; background:#f7d36b; box-shadow:0 2px 2px rgba(92,58,37,.18); animation:crumbFly .72s ease-out forwards; }
+.bite-effect i:nth-of-type(1){--cx:-5vmin;--cy:-4.5vmin}.bite-effect i:nth-of-type(2){--cx:5.5vmin;--cy:-3.8vmin;animation-delay:.05s}.bite-effect i:nth-of-type(3){--cx:-4.6vmin;--cy:5vmin;animation-delay:.08s}.bite-effect i:nth-of-type(4){--cx:5vmin;--cy:4.4vmin;animation-delay:.12s}
+.bite-effect b { position:absolute; right:-8%; top:-8%; color:#fff3a7; font-size:clamp(20px,4vmin,40px); text-shadow:0 3px 7px rgba(82,58,34,.2); animation:sparkPop .68s ease-out forwards; }
 
 .blanket { position:absolute; z-index:12; left:6%; right:6%; bottom:-1%; height:42%; overflow:hidden; border:clamp(5px,.7vmin,8px) solid rgba(45,59,89,.8); border-radius:48% 48% 20% 20%; background:linear-gradient(145deg,#7895c1,#526d9d); box-shadow:inset 0 10px rgba(255,255,255,.12),0 12px 20px rgba(24,36,57,.2); animation:blanketRise .55s cubic-bezier(.2,.8,.3,1); }
 .blanket::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 18% 30%,#f8d885 0 2.4%,transparent 2.8%),radial-gradient(circle at 73% 59%,#f8d885 0 2.4%,transparent 2.8%),radial-gradient(circle at 48% 22%,rgba(255,255,255,.22) 0 2%,transparent 2.4%); }
@@ -104,7 +116,14 @@ button { font: inherit; color: inherit; }
 .celebration { position:fixed; z-index:49; inset:0; pointer-events:none; }.celebration span { position:absolute; left:50%; top:46%; color:#ff756e; font-size:clamp(30px,6vmin,65px); animation:pop 1.35s ease-out forwards; }.celebration span:nth-child(1){--tx:-38vw;--ty:-28vh;color:#f07168}.celebration span:nth-child(2){--tx:-22vw;--ty:-40vh;color:#ffd96e}.celebration span:nth-child(3){--tx:2vw;--ty:-43vh;color:#fff2a6}.celebration span:nth-child(4){--tx:28vw;--ty:-32vh;color:#78cbe3}.celebration span:nth-child(5){--tx:39vw;--ty:4vh;color:#f07168}.celebration span:nth-child(6){--tx:22vw;--ty:32vh;color:#ffd96e}.celebration span:nth-child(7){--tx:-5vw;--ty:34vh;color:#fff2a6}.celebration span:nth-child(8){--tx:-32vw;--ty:19vh;color:#78cbe3}
 
 @keyframes flyToMouth { 0%{transform:translate(-50%,-50%) rotate(-9deg) scale(1)} 58%{transform:translate(calc(var(--to-x) - var(--from-x) - 50%),calc(var(--to-y) - var(--from-y) - 8vmin)) rotate(14deg) scale(.8)} 100%{transform:translate(calc(var(--to-x) - var(--from-x) - 50%),calc(var(--to-y) - var(--from-y) - 50%)) scale(.16);opacity:.2} }
-@keyframes munch { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(5px) scale(1.015)} }
+@keyframes stageReach { 0%{transform:translateY(0) scale(1)} 22%{transform:translateY(-1.2%) scale(1.012)} 56%{transform:translateY(2.5%) scale(1.025)} 82%{transform:translateY(1%) scale(1.018)} 100%{transform:translateY(0) scale(1)} }
+@keyframes lookAtTreat { 0%{transform:scale(1)} 28%{transform:scale(1.025) translateY(-.8%)} 65%{transform:scale(1.075) translateY(1.8%)} 100%{transform:scale(1.055) translateY(1%)} }
+@keyframes biteFrame { 0%{transform:translateY(0) scale(1)} 9%{transform:translateY(2.2%) scale(1.035,.965)} 20%{transform:translateY(-2.1%) scale(.985,1.025)} 33%{transform:translateY(1.5%) rotate(-.8deg)} 47%{transform:translateY(-1.5%) rotate(.8deg)} 61%{transform:translateY(1.2%) rotate(-.6deg)} 75%{transform:translateY(-1%) rotate(.5deg)} 100%{transform:translateY(0) rotate(0) scale(1)} }
+@keyframes characterChew { 0%{transform:scale(1.055) translateY(1%)} 10%{transform:scale(1.09,.96) translateY(3%)} 21%{transform:scale(1.02,1.055) translateY(-2%)} 34%{transform:scale(1.065,.98) translateY(2%)} 48%{transform:scale(1.025,1.04) translateY(-1.5%)} 62%{transform:scale(1.055,.985) translateY(1.5%)} 77%{transform:scale(1.025,1.025) translateY(-1%)} 100%{transform:scale(1) translateY(0)} }
+@keyframes biteRing { 0%{transform:scale(.15);opacity:1} 100%{transform:scale(1.65);opacity:0} }
+@keyframes treatCrunch { 0%{transform:translate(-50%,-50%) scale(.75) rotate(-8deg);opacity:1} 40%{transform:translate(-50%,-50%) scale(.45) rotate(10deg);opacity:1} 100%{transform:translate(-50%,-50%) scale(.05) rotate(-20deg);opacity:0} }
+@keyframes crumbFly { 0%{transform:translate(0,0) scale(.3);opacity:1} 100%{transform:translate(var(--cx),var(--cy)) scale(1);opacity:0} }
+@keyframes sparkPop { 0%{transform:scale(.2) rotate(-20deg);opacity:0} 35%{transform:scale(1.25) rotate(8deg);opacity:1} 100%{transform:scale(.7) rotate(24deg);opacity:0} }
 @keyframes happyBounce { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-4vmin) rotate(1.5deg)} }
 @keyframes petWiggle { 0%,100%{transform:rotate(0) scale(1)} 50%{transform:rotate(1.5deg) scale(1.02)} }
 @keyframes petHeart { 0%{transform:translateY(20px) scale(.4);opacity:0} 35%{opacity:1} 100%{transform:translateY(-55px) scale(1.15);opacity:0} }
@@ -152,4 +171,4 @@ button { font: inherit; color: inherit; }
   .sun-or-moon { right:36%; }
 }
 
-@media (prefers-reduced-motion: reduce) { .stars i,.pet-art-frame,.pet-stage { animation:none !important; } }
+@media (prefers-reduced-motion: reduce) { .stars i,.pet-art-frame,.pet-art,.pet-stage,.bite-effect * { animation:none !important; } }

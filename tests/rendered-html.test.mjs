@@ -55,6 +55,9 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /function toggleSleep/);
   assert.match(page, /soundEnabled/);
   assert.match(page, /flightTimerRef/);
+  assert.match(page, /reactionTimerRef/);
+  assert.match(page, /is-reaching/);
+  assert.match(page, /bite-effect/);
   assert.doesNotMatch(page, /onAnimationEnd=/);
   assert.match(serviceWorker, /caches\.open/);
   assert.match(serviceWorker, /self\.registration\.scope/);
