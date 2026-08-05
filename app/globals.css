@@ -142,6 +142,7 @@ button { font: inherit; color: inherit; }
 
 @media (max-height: 620px) and (orientation: landscape) {
   .topbar { top:2%; width:96%; }.brand { font-size:17px; }
+  .dock-caption { display:none; }
   .pet-picker button { min-width:86px; min-height:48px; height:48px; }.pet-picker button img { width:40px; }.pet-picker button small { font-size:11px; }
   .playground { inset:7% 34% 2% 0; justify-content:flex-end; }.message { margin-bottom:-5px; font-size:15px; }
   .pet-stage { width:min(73vh,445px); }.hearts { position:absolute; bottom:0; }
