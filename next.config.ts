@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   output: isGitHubPages ? "export" : undefined,
   trailingSlash: true,
   images: { unoptimized: true },
+  turbopack: { root: process.cwd() },
   basePath: isGitHubPages ? "/pokormi-kotika" : "",
   assetPrefix: isGitHubPages ? "/pokormi-kotika/" : "",
 };

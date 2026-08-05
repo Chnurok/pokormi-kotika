@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Pet = "cat" | "horse";
 
@@ -33,7 +33,8 @@ type FlyingTreat = {
   toY: number;
 };
 
-function playSound(kind: "happy" | "sleep") {
+function playSound(kind: "happy" | "sleep", enabled = true) {
+  if (!enabled) return;
   const AudioContextClass =
     window.AudioContext ||
     (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -65,10 +66,24 @@ export default function Home() {
   const [fed, setFed] = useState<Record<Pet, number>>({ cat: 0, horse: 0 });
   const [chewing, setChewing] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  const [petting, setPetting] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const currentPet = pets[pet];
 
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      const base = window.location.pathname.startsWith("/pokormi-kotika") ? "/pokormi-kotika/" : "/";
+      navigator.serviceWorker.register(`${base}sw.js`, { scope: base }).catch(() => undefined);
+    }
+    const preventMenu = (event: Event) => event.preventDefault();
+    document.addEventListener("contextmenu", preventMenu);
+    return () => document.removeEventListener("contextmenu", preventMenu);
+  }, []);
+
   function choosePet(nextPet: Pet) {
+    setHasInteracted(true);
     setPet(nextPet);
     setSleeping(false);
     setChewing(false);
@@ -83,7 +98,8 @@ export default function Home() {
 
     setSleeping(false);
     setChewing(false);
-    playSound("happy");
+    setHasInteracted(true);
+    playSound("happy", soundEnabled);
     setFlying({
       emoji,
       fromX: source.left + source.width / 2,
@@ -107,10 +123,24 @@ export default function Home() {
   }
 
   function toggleSleep() {
+    setHasInteracted(true);
     const next = !sleeping;
     setSleeping(next);
     setChewing(false);
-    if (next) playSound("sleep");
+    if (next) playSound("sleep", soundEnabled);
+  }
+
+  function petAnimal() {
+    setHasInteracted(true);
+    if (sleeping) {
+      setSleeping(false);
+      playSound("happy", soundEnabled);
+      return;
+    }
+    if (petting) return;
+    setPetting(true);
+    playSound("happy", soundEnabled);
+    window.setTimeout(() => setPetting(false), 800);
   }
 
   const message = sleeping
@@ -136,6 +166,9 @@ export default function Home() {
 
       <header className="topbar">
         <div className="brand"><span>♡</span><strong>Мои зверята</strong></div>
+        <button className="sound-toggle" onPointerDown={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? "Выключить звук" : "Включить звук"} aria-pressed={soundEnabled}>
+          <span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span>
+        </button>
         <nav className="pet-picker" aria-label="Выбрать питомца">
           {(Object.keys(pets) as Pet[]).map((key) => (
             <button
@@ -155,7 +188,7 @@ export default function Home() {
       <section className="playground">
         <div className="message" aria-live="polite"><span>{sleeping ? "☾" : chewing ? "♥" : "✦"}</span>{message}</div>
 
-        <div className={`pet-stage pet-${pet} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""}`}>
+        <div className={`pet-stage pet-${pet} ${chewing ? "is-chewing" : ""} ${celebrating ? "is-celebrating" : ""} ${sleeping ? "is-sleeping" : ""} ${petting ? "is-petting" : ""}`} onPointerDown={petAnimal} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") petAnimal(); }} role="button" tabIndex={0} aria-label={`Погладить питомца ${currentPet.name}`}>
           <div className="pet-shadow" />
           {pet === "cat" ? (
             <div className="cat-figure">
@@ -194,6 +227,7 @@ export default function Home() {
 
           {sleeping && <div className="blanket"><i>★</i><i>★</i><span /></div>}
           {sleeping && <div className="sleep-bubbles" aria-hidden="true"><i>z</i><i>z</i><i>z</i></div>}
+          {petting && <div className="petting-hearts" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i></div>}
         </div>
 
         <div className="hearts" aria-label={`${currentPet.name}: ${fed[pet]} из 5 сердечек`}>
@@ -203,14 +237,14 @@ export default function Home() {
 
       <section className="care-dock" aria-label="Уход за питомцем">
         <div className="food-group">
-          {currentPet.treats.map((treat) => (
+          {currentPet.treats.map((treat, index) => (
             <button
               key={treat.name}
               className="care-button food-button"
               style={{ "--button-color": treat.color } as React.CSSProperties}
               aria-label={`Дать ${currentPet.name === "Рыжик" ? "Рыжику" : "Звёздочке"} ${treat.name}`}
               onPointerDown={(event) => feed(treat.emoji, event.currentTarget)}
-            ><span aria-hidden="true">{treat.emoji}</span></button>
+            ><span aria-hidden="true">{treat.emoji}</span>{index === 0 && !hasInteracted && <i className="first-hint" aria-hidden="true">☝</i>}</button>
           ))}
         </div>
         <div className="dock-divider" />
