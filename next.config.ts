@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
+const isMobileBuild = process.env.CAPACITOR === "true";
 
 const nextConfig: NextConfig = {
-  output: isGitHubPages ? "export" : undefined,
+  output: isGitHubPages || isMobileBuild ? "export" : undefined,
   trailingSlash: true,
   images: { unoptimized: true },
   turbopack: { root: process.cwd() },

@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { StatusBar } from "@capacitor/status-bar";
 
 type Pet = "cat" | "horse";
 
@@ -65,6 +69,15 @@ function playSound(kind: "happy" | "sleep" | "bite", enabled = true) {
   window.setTimeout(() => context.close(), 700);
 }
 
+function playHaptic(kind: "light" | "medium" | "success") {
+  if (!Capacitor.isNativePlatform()) return;
+  if (kind === "success") {
+    void Haptics.notification({ type: NotificationType.Success });
+    return;
+  }
+  void Haptics.impact({ style: kind === "medium" ? ImpactStyle.Medium : ImpactStyle.Light });
+}
+
 export default function Home() {
   const mouthRef = useRef<HTMLDivElement>(null);
   const flightTimerRef = useRef<number | null>(null);
@@ -92,6 +105,7 @@ export default function Home() {
   const [brushPosition, setBrushPosition] = useState({ x: 50, y: 58 });
   const [hasInteracted, setHasInteracted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [storageReady, setStorageReady] = useState(false);
 
   const currentPet = pets[pet];
   const currentArt = feedingFrame !== null
@@ -125,6 +139,32 @@ export default function Home() {
   }
 
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("moi-zveryata-progress-v1");
+      if (saved) {
+        const value = JSON.parse(saved) as {
+          pet?: Pet;
+          fed?: Partial<Record<Pet, number>>;
+          soundEnabled?: boolean;
+        };
+        if (value.pet === "cat" || value.pet === "horse") setPet(value.pet);
+        if (value.fed) {
+          setFed({
+            cat: Math.max(0, Math.min(4, Number(value.fed.cat) || 0)),
+            horse: Math.max(0, Math.min(4, Number(value.fed.horse) || 0)),
+          });
+        }
+        if (typeof value.soundEnabled === "boolean") setSoundEnabled(value.soundEnabled);
+      }
+    } catch {
+      // Corrupt local progress should never prevent a child from opening the game.
+    }
+    setStorageReady(true);
+
+    if (Capacitor.isNativePlatform()) {
+      void StatusBar.hide();
+      window.setTimeout(() => void SplashScreen.hide(), 550);
+    }
     Object.values(pets).flatMap((animal) => [
       ...animal.eatFrames,
       ...animal.careFrames,
@@ -133,7 +173,7 @@ export default function Home() {
       const image = new Image();
       image.src = src;
     });
-    if ("serviceWorker" in navigator) {
+    if (!Capacitor.isNativePlatform() && "serviceWorker" in navigator) {
       const base = window.location.pathname.startsWith("/pokormi-kotika") ? "/pokormi-kotika/" : "/";
       navigator.serviceWorker.register(`${base}sw.js`, { scope: base, updateViaCache: "none" }).catch(() => undefined);
     }
@@ -150,7 +190,16 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!storageReady) return;
+    window.localStorage.setItem(
+      "moi-zveryata-progress-v1",
+      JSON.stringify({ pet, fed, soundEnabled }),
+    );
+  }, [fed, pet, soundEnabled, storageReady]);
+
   function choosePet(nextPet: Pet) {
+    playHaptic("light");
     setHasInteracted(true);
     if (flightTimerRef.current !== null) window.clearTimeout(flightTimerRef.current);
     if (reactionTimerRef.current !== null) window.clearTimeout(reactionTimerRef.current);
@@ -190,6 +239,7 @@ export default function Home() {
     setPetting(false);
     setHasInteracted(true);
     setLastTreat(emoji);
+    playHaptic("medium");
     clearFrameTimers();
     clearActionTimers();
     setFeedingFrame(0);
@@ -217,6 +267,7 @@ export default function Home() {
     showFeedingFrame(2, 670);
     showFeedingFrame(3, 850);
     playSound("bite", soundEnabled);
+    playHaptic("success");
     setFed((value) => {
       const next = value[fedPet] + 1;
       if (next >= 5) {
@@ -235,6 +286,7 @@ export default function Home() {
 
   function toggleSleep() {
     if (flying || chewing) return;
+    playHaptic("light");
     setHasInteracted(true);
     const next = !sleeping;
     setSleeping(next);
@@ -265,6 +317,7 @@ export default function Home() {
 
   function petAnimal() {
     if (flying || chewing || grooming) return;
+    playHaptic("light");
     setHasInteracted(true);
     if (sleeping) {
       clearActionTimers();
@@ -289,6 +342,7 @@ export default function Home() {
 
   function toggleGrooming() {
     if (flying || chewing) return;
+    playHaptic("light");
     setHasInteracted(true);
     const next = !grooming;
     clearActionTimers();
@@ -340,6 +394,7 @@ export default function Home() {
 
   function completeBrushStroke() {
     if (!grooming) return;
+    playHaptic("light");
     setBrushProgress((value) => {
       const next = Math.min(4, value + 1);
       setCareFrame(next % 2 === 0 ? 3 : 2);

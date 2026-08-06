@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Мои зверята</string>
+    <string name="title_activity_main">Мои зверята</string>
+    <string name="package_name">com.chnurok.moizveryata</string>
+    <string name="custom_url_scheme">com.chnurok.moizveryata</string>
+</resources>

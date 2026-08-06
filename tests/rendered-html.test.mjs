@@ -54,6 +54,10 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /function petAnimal/);
   assert.match(page, /function toggleSleep/);
   assert.match(page, /soundEnabled/);
+  assert.match(page, /moi-zveryata-progress-v1/);
+  assert.match(page, /Capacitor\.isNativePlatform/);
+  assert.match(page, /Haptics\.impact/);
+  assert.match(page, /SplashScreen\.hide/);
   assert.match(page, /flightTimerRef/);
   assert.match(page, /reactionTimerRef/);
   assert.match(page, /feedingFrame/);
