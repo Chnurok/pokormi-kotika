@@ -37,7 +37,9 @@ jobs:
       - run: npm run mobile:sync:android
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: moi-zveryata-android-debug

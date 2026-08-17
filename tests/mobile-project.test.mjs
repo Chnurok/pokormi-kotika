@@ -44,6 +44,7 @@ test("ships complete Android and iOS native projects", async () => {
   assert.match(infoPlist, /ITSAppUsesNonExemptEncryption/);
   assert.match(infoPlist, /UIRequiresFullScreen/);
   assert.match(workflow, /assembleDebug/);
+  assert.match(workflow, /chmod \+x gradlew/);
   assert.match(workflow, /moi-zveryata-android-debug/);
   assert.match(privacy, /сохраняются только на устройстве/);
   assert.ok(androidIcon.size > 20_000);
