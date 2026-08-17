@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#87ceeb">
+  <title>Волшебная площадка — Мои зверята</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #071127; touch-action: none; user-select: none; -webkit-user-select: none; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .home-mark { position: fixed; z-index: 8; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: grid; place-items: center; width: 64px; height: 64px; border: 3px solid rgba(255,255,255,.72); border-radius: 50%; color: white; background: rgba(27,35,62,.45); box-shadow: 0 8px 24px rgba(0,0,0,.18); font: 32px/1 system-ui; pointer-events: none; backdrop-filter: blur(8px); }
+    .hint { position: fixed; z-index: 7; left: 50%; bottom: max(54px, calc(env(safe-area-inset-bottom) + 40px)); translate: -50% 0; padding: 10px 18px; border-radius: 999px; color: white; background: rgba(22,31,58,.66); font: 800 clamp(14px,3vw,20px)/1.2 system-ui; white-space: nowrap; pointer-events: none; animation: hint-away 5s 1s both; }
+    #exit-overlay { display: none; position: fixed; z-index: 20; inset: 0; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: white; background: rgba(14,22,48,.72); font-family: system-ui; pointer-events: none; backdrop-filter: blur(10px); }
+    #exit-overlay.visible { display: flex; }
+    #exit-countdown { font-size: min(30vw,150px); font-weight: 1000; line-height: 1; }
+    #exit-label { font-size: clamp(18px,5vw,32px); font-weight: 900; }
+    @keyframes hint-away { 0%,55% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(12px); } }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" aria-label="Интерактивная площадка: трогайте предметы и листайте миры"></canvas>
+  <div class="home-mark" aria-hidden="true">⌂</div>
+  <div class="hint" aria-hidden="true">Трогай всё · листай вбок</div>
+  <div id="exit-overlay" aria-hidden="true">
+    <div id="exit-countdown">3</div>
+    <div id="exit-label">Домой</div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

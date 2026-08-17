@@ -49,6 +49,10 @@ button { font: inherit; color: inherit; }
 .brand { display:flex; align-items:center; gap:.55em; padding:.55em 1em .62em; border:2px solid rgba(255,255,255,.82); border-radius:999px; background:rgba(255,252,242,.84); box-shadow:0 10px 30px rgba(60,79,65,.13),inset 0 1px white; backdrop-filter:blur(14px); font-size:clamp(18px,2.5vmin,28px); font-weight:900; white-space:nowrap; }
 .brand span { display:grid; place-items:center; width:1.7em; aspect-ratio:1; border-radius:50%; background:linear-gradient(145deg,#f38a77,#e96662); color:white; box-shadow:inset 0 2px rgba(255,255,255,.4),0 4px 10px rgba(193,81,73,.2); }
 .top-actions { display:flex; align-items:center; gap:clamp(8px,1.4vmin,16px); }
+.world-toggle { display:flex; align-items:center; gap:7px; min-height:clamp(50px,6.5vmin,68px); padding:0 clamp(12px,1.8vmin,20px); border:2px solid rgba(255,255,255,.84); border-radius:999px; color:#4e3d68; background:linear-gradient(145deg,rgba(255,251,223,.96),rgba(198,239,255,.94)); box-shadow:0 9px 24px rgba(60,79,65,.14),inset 0 1px white; font-weight:950; cursor:pointer; backdrop-filter:blur(14px); }
+.world-toggle span { font-size:clamp(25px,3.5vmin,38px); filter:drop-shadow(0 3px 2px rgba(60,50,80,.15)); }
+.world-toggle small { font-size:clamp(12px,1.45vmin,16px); font-weight:950; }
+.world-toggle:active { transform:scale(.94); }
 .sound-toggle { display:grid; place-items:center; width:clamp(50px,6.5vmin,68px); aspect-ratio:1; padding:0; border:2px solid rgba(255,255,255,.84); border-radius:50%; background:rgba(255,252,242,.86); box-shadow:0 9px 24px rgba(60,79,65,.14),inset 0 1px white; font-size:clamp(25px,3.6vmin,38px); font-weight:900; cursor:pointer; backdrop-filter:blur(14px); }
 .sound-toggle:active { transform:scale(.93); }
 .pet-picker { display:flex; gap:7px; padding:7px; border:2px solid rgba(255,255,255,.76); border-radius:999px; background:rgba(255,252,242,.72); box-shadow:0 10px 30px rgba(60,79,65,.13); backdrop-filter:blur(14px); }
@@ -136,7 +140,7 @@ button { font: inherit; color: inherit; }
 .sleep-button small { margin-top:-.28em; font-size:clamp(10px,1.45vmin,15px); font-weight:900; }
 .sleep-button.is-active { color:#684738; background:radial-gradient(circle at 34% 24%,rgba(255,255,255,.34),transparent 18%),linear-gradient(145deg,#ffe18c,#efb85e); }
 .care-button:active { transform:translateY(7px) scale(.95); box-shadow:inset 0 0 0 5px rgba(255,255,255,.85),0 1px 0 rgba(72,44,34,.18); }
-.care-button:focus-visible,.sound-toggle:focus-visible,.pet-picker button:focus-visible { outline:6px solid #4f72ff; outline-offset:3px; }
+.care-button:focus-visible,.sound-toggle:focus-visible,.world-toggle:focus-visible,.pet-picker button:focus-visible { outline:6px solid #4f72ff; outline-offset:3px; }
 
 .flying-treat { position:fixed; z-index:50; left:var(--from-x); top:var(--from-y); font-size:clamp(58px,9vmin,100px); line-height:1; pointer-events:none; filter:drop-shadow(0 8px 4px rgba(55,44,35,.22)); transform:translate(-50%,-50%); animation:flyToMouth .7s cubic-bezier(.2,.72,.32,1) forwards; }
 .celebration { position:fixed; z-index:49; inset:0; pointer-events:none; }.celebration span { position:absolute; left:50%; top:46%; color:#ff756e; font-size:clamp(30px,6vmin,65px); animation:pop 1.35s ease-out forwards; }.celebration span:nth-child(1){--tx:-38vw;--ty:-28vh;color:#f07168}.celebration span:nth-child(2){--tx:-22vw;--ty:-40vh;color:#ffd96e}.celebration span:nth-child(3){--tx:2vw;--ty:-43vh;color:#fff2a6}.celebration span:nth-child(4){--tx:28vw;--ty:-32vh;color:#78cbe3}.celebration span:nth-child(5){--tx:39vw;--ty:4vh;color:#f07168}.celebration span:nth-child(6){--tx:22vw;--ty:32vh;color:#ffd96e}.celebration span:nth-child(7){--tx:-5vw;--ty:34vh;color:#fff2a6}.celebration span:nth-child(8){--tx:-32vw;--ty:19vh;color:#78cbe3}
@@ -170,7 +174,7 @@ button { font: inherit; color: inherit; }
 
 @media (max-width: 620px) {
   .brand strong { display:none; }.brand { padding:.42em; }.brand span { width:2em; }
-  .top-actions { gap:6px; }.sound-toggle { width:54px; }
+  .top-actions { gap:6px; }.sound-toggle { width:54px; }.world-toggle { width:54px; min-width:54px; padding:0; justify-content:center; }.world-toggle small { display:none; }
   .pet-picker { padding:5px; gap:4px; }.pet-picker button { min-width:58px; width:58px; min-height:58px; height:58px; justify-content:center; padding:4px; }.pet-picker button img { width:48px; }.pet-picker button small { display:none; }
   .playground { inset:11% 0 23%; }.message { font-size:15px; }
   .stage-shell { width:min(54vh,92vw,470px); }

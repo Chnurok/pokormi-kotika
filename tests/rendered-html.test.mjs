@@ -58,6 +58,7 @@ test("ships an installable, offline-safe, ad-free product", async () => {
   assert.match(page, /Capacitor\.isNativePlatform/);
   assert.match(page, /Haptics\.impact/);
   assert.match(page, /SplashScreen\.hide/);
+  assert.match(page, /\.\/playground\//);
   assert.match(page, /flightTimerRef/);
   assert.match(page, /reactionTimerRef/);
   assert.match(page, /feedingFrame/);
@@ -117,4 +118,32 @@ test("ships an installable, offline-safe, ad-free product", async () => {
       [1, 2, 3, 4].map((frame) => access(new URL(`public/${animal}-${action}-${frame}.jpg`, root))),
     )),
   ]);
+});
+
+test("includes the localized toddler playground and its license", async () => {
+  const root = new URL("../", import.meta.url);
+  const [index, input, collection, audio, car, serviceWorker, notice, license] = await Promise.all([
+    readFile(new URL("public/playground/index.html", root), "utf8"),
+    readFile(new URL("public/playground/src/InputManager.js", root), "utf8"),
+    readFile(new URL("public/playground/src/CollectionManager.js", root), "utf8"),
+    readFile(new URL("public/playground/src/AudioManager.js", root), "utf8"),
+    readFile(new URL("public/playground/src/actors/Car.js", root), "utf8"),
+    readFile(new URL("public/sw.js", root), "utf8"),
+    readFile(new URL("THIRD_PARTY_NOTICES.md", root), "utf8"),
+    readFile(new URL("public/playground/LICENSE", root), "utf8"),
+  ]);
+
+  assert.match(index, /Волшебная площадка/);
+  assert.match(index, /\.\/src\/main\.js/);
+  assert.doesNotMatch(index, /https?:\/\//);
+  assert.match(input, /window\.location\.href = '\.\.\/'/);
+  assert.match(collection, /moi-zveryata-playground-collection-v1/);
+  assert.match(collection, /Мои находки/);
+  assert.match(audio, /ru-RU/);
+  assert.doesNotMatch(car, /Math\.random\(\) < 0\.3/);
+  assert.match(serviceWorker, /moi-zveryata-v8/);
+  assert.match(serviceWorker, /playground\/src\/World\.js/);
+  assert.match(notice, /c39f3f54e69d76b00036080b2723165609cc7525/);
+  assert.match(license, /MIT License/);
+  assert.match(license, /Copyright \(c\) 2026 programmism/);
 });

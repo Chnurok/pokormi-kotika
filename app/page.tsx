@@ -448,6 +448,11 @@ export default function Home() {
         <div className="brand"><span aria-hidden="true">♥</span><strong>Мои зверята</strong></div>
         <div className="top-actions">
           <button
+            className="world-toggle"
+            onPointerDown={() => { window.location.href = "./playground/"; }}
+            aria-label="Открыть волшебную площадку"
+          ><span aria-hidden="true">🚀</span><small>Играть</small></button>
+          <button
             className="sound-toggle"
             onPointerDown={() => setSoundEnabled((value) => !value)}
             aria-label={soundEnabled ? "Выключить звук" : "Включить звук"}

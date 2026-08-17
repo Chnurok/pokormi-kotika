@@ -1,4 +1,35 @@
-const CACHE = "moi-zveryata-v7";
+const CACHE = "moi-zveryata-v8";
+
+const PLAYGROUND = [
+  "playground/",
+  "playground/LICENSE",
+  "playground/src/AudioManager.js",
+  "playground/src/Background.js",
+  "playground/src/CollectionManager.js",
+  "playground/src/ColoringScene.js",
+  "playground/src/DrawingLayer.js",
+  "playground/src/GameLoop.js",
+  "playground/src/GoalManager.js",
+  "playground/src/InputManager.js",
+  "playground/src/KeyLabel.js",
+  "playground/src/MusicManager.js",
+  "playground/src/MusicScene.js",
+  "playground/src/ParticleSystem.js",
+  "playground/src/SceneManager.js",
+  "playground/src/World.js",
+  "playground/src/main.js",
+  "playground/src/actors/Actor.js",
+  "playground/src/actors/Astronaut.js",
+  "playground/src/actors/Ball.js",
+  "playground/src/actors/Butterfly.js",
+  "playground/src/actors/Car.js",
+  "playground/src/actors/Companion.js",
+  "playground/src/actors/Fish.js",
+  "playground/src/actors/LaunchPad.js",
+  "playground/src/actors/Rocket.js",
+  "playground/src/actors/Star.js",
+  "playground/src/actors/Target.js",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -33,6 +64,7 @@ self.addEventListener("install", (event) => {
       `${self.registration.scope}zvezdochka-sleep-2.jpg`,
       `${self.registration.scope}zvezdochka-sleep-3.jpg`,
       `${self.registration.scope}zvezdochka-sleep-4.jpg`,
+      ...PLAYGROUND.map((path) => `${self.registration.scope}${path}`),
     ])),
   );
   self.skipWaiting();
@@ -55,10 +87,10 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request).then((response) => {
         if (response.ok) {
           const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(self.registration.scope, copy));
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
         }
         return response;
-      }).catch(() => caches.match(self.registration.scope)),
+      }).catch(() => caches.match(event.request).then((cached) => cached || caches.match(self.registration.scope))),
     );
     return;
   }
